@@ -9,9 +9,10 @@ import (
 
 func main() {
 	wasmBinary, err := wat.ParseStr(`(module
-		(func
-		  (local i32)
-		  (local i64 i64)
+		(func (param i32 i32) (result i32)
+		  (local.get 0)
+		  (local.get 1)
+		  i32.add
 		)
 	  )`)
 	fmt.Println(wasmBinary)

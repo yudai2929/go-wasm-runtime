@@ -183,6 +183,29 @@ func decodeFunctionSection(binary []byte) (remaining []byte, functionSection []u
 	return remaining, funcIndexes, nil
 }
 
+func decodeInstruction(binary []byte) (remaining []byte, instruction section.Instruction, err error) {
+	remaining, opcode, err := bin.LeU8(binary)
+	if err != nil {
+		return nil, nil, err
+	}
+	op := section.NewOpCode(opcode)
+	switch op {
+	case section.OpCodeLocalGet:
+		rest, index, err := bin.Leb128U32(remaining)
+		if err != nil {
+			return nil, nil, err
+		}
+		instruction = section.InstructionLocalGet{Value: index}
+		remaining = rest
+	case section.OpCodeI32Add:
+		instruction = section.InstructionI32Add{}
+	case section.OpCodeEnd:
+		instruction = section.InstructionEnd{}
+	}
+
+	return remaining, instruction, nil
+}
+
 func decodeFunctionBody(binary []byte) (remaining []byte, functionBody section.Function, err error) {
 	remaining, count, err := bin.Leb128U32(binary)
 	if err != nil {
@@ -207,14 +230,20 @@ func decodeFunctionBody(binary []byte) (remaining []byte, functionBody section.F
 		remaining = rest
 	}
 
-	// TODO: 命令のデコード
+	for len(remaining) > 0 {
+		rest, instruction, err := decodeInstruction(remaining)
+		if err != nil {
+			return nil, section.Function{}, err
+		}
+		functionBody.Code = append(functionBody.Code, instruction)
+		remaining = rest
+	}
 
 	return remaining, functionBody, nil
 
 }
 
 func decodeCodeSection(binary []byte) (remaining []byte, codeSection section.Functions, err error) {
-	fmt.Printf("binary: %v\n", binary)
 	functions := make(section.Functions, 0)
 	remaining, count, err := bin.Leb128U32(binary)
 	if err != nil {

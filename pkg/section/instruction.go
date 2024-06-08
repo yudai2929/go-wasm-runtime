@@ -1,185 +1,24 @@
 package section
 
-type Instruction int32
+type Instruction interface {
+	isInstruction()
+}
 
 type Instructions []Instruction
 
-const (
-	InstructionUnreachable       Instruction = 0x00
-	InstructionNop               Instruction = 0x01
-	InstructionBlock             Instruction = 0x02
-	InstructionLoop              Instruction = 0x03
-	InstructionIf                Instruction = 0x04
-	InstructionElse              Instruction = 0x05
-	InstructionEnd               Instruction = 0x0B
-	InstructionBr                Instruction = 0x0C
-	InstructionBrIf              Instruction = 0x0D
-	InstructionBrTable           Instruction = 0x0E
-	InstructionReturn            Instruction = 0x0F
-	InstructionCall              Instruction = 0x10
-	InstructionCallIndirect      Instruction = 0x11
-	InstructionDrop              Instruction = 0x1A
-	InstructionSelect            Instruction = 0x1B
-	InstructionLocalGet          Instruction = 0x20
-	InstructionLocalSet          Instruction = 0x21
-	InstructionLocalTee          Instruction = 0x22
-	InstructionGlobalGet         Instruction = 0x23
-	InstructionGlobalSet         Instruction = 0x24
-	InstructionI32Load           Instruction = 0x28
-	InstructionI64Load           Instruction = 0x29
-	InstructionF32Load           Instruction = 0x2A
-	InstructionF64Load           Instruction = 0x2B
-	InstructionI32Load8S         Instruction = 0x2C
-	InstructionI32Load8U         Instruction = 0x2D
-	InstructionI32Load16S        Instruction = 0x2E
-	InstructionI32Load16U        Instruction = 0x2F
-	InstructionI64Load8S         Instruction = 0x30
-	InstructionI64Load8U         Instruction = 0x31
-	InstructionI64Load16S        Instruction = 0x32
-	InstructionI64Load16U        Instruction = 0x33
-	InstructionI64Load32S        Instruction = 0x34
-	InstructionI64Load32U        Instruction = 0x35
-	InstructionI32Store          Instruction = 0x36
-	InstructionI64Store          Instruction = 0x37
-	InstructionF32Store          Instruction = 0x38
-	InstructionF64Store          Instruction = 0x39
-	InstructionI32Store8         Instruction = 0x3A
-	InstructionI32Store16        Instruction = 0x3B
-	InstructionI64Store8         Instruction = 0x3C
-	InstructionI64Store16        Instruction = 0x3D
-	InstructionI64Store32        Instruction = 0x3E
-	InstructionMemorySize        Instruction = 0x3F
-	InstructionMemoryGrow        Instruction = 0x40
-	InstructionI32Const          Instruction = 0x41
-	InstructionI64Const          Instruction = 0x42
-	InstructionF32Const          Instruction = 0x43
-	InstructionF64Const          Instruction = 0x44
-	InstructionI32Eqz            Instruction = 0x45
-	InstructionI32Eq             Instruction = 0x46
-	InstructionI32Ne             Instruction = 0x47
-	InstructionI32LtS            Instruction = 0x48
-	InstructionI32LtU            Instruction = 0x49
-	InstructionI32GtS            Instruction = 0x4A
-	InstructionI32GtU            Instruction = 0x4B
-	InstructionI32LeS            Instruction = 0x4C
-	InstructionI32LeU            Instruction = 0x4D
-	InstructionI32GeS            Instruction = 0x4E
-	InstructionI32GeU            Instruction = 0x4F
-	InstructionI64Eqz            Instruction = 0x50
-	InstructionI64Eq             Instruction = 0x51
-	InstructionI64Ne             Instruction = 0x52
-	InstructionI64LtS            Instruction = 0x53
-	InstructionI64LtU            Instruction = 0x54
-	InstructionI64GtS            Instruction = 0x55
-	InstructionI64GtU            Instruction = 0x56
-	InstructionI64LeS            Instruction = 0x57
-	InstructionI64LeU            Instruction = 0x58
-	InstructionI64GeS            Instruction = 0x59
-	InstructionI64GeU            Instruction = 0x5A
-	InstructionF32Eq             Instruction = 0x5B
-	InstructionF32Ne             Instruction = 0x5C
-	InstructionF32Lt             Instruction = 0x5D
-	InstructionF32Gt             Instruction = 0x5E
-	InstructionF32Le             Instruction = 0x5F
-	InstructionF32Ge             Instruction = 0x60
-	InstructionF64Eq             Instruction = 0x61
-	InstructionF64Ne             Instruction = 0x62
-	InstructionF64Lt             Instruction = 0x63
-	InstructionF64Gt             Instruction = 0x64
-	InstructionF64Le             Instruction = 0x65
-	InstructionF64Ge             Instruction = 0x66
-	InstructionI32Clz            Instruction = 0x67
-	InstructionI32Ctz            Instruction = 0x68
-	InstructionI32Popcnt         Instruction = 0x69
-	InstructionI32Add            Instruction = 0x6A
-	InstructionI32Sub            Instruction = 0x6B
-	InstructionI32Mul            Instruction = 0x6C
-	InstructionI32DivS           Instruction = 0x6D
-	InstructionI32DivU           Instruction = 0x6E
-	InstructionI32RemS           Instruction = 0x6F
-	InstructionI32RemU           Instruction = 0x70
-	InstructionI32And            Instruction = 0x71
-	InstructionI32Or             Instruction = 0x72
-	InstructionI32Xor            Instruction = 0x73
-	InstructionI32Shl            Instruction = 0x74
-	InstructionI32ShrS           Instruction = 0x75
-	InstructionI32ShrU           Instruction = 0x76
-	InstructionI32Rotl           Instruction = 0x77
-	InstructionI32Rotr           Instruction = 0x78
-	InstructionI64Clz            Instruction = 0x79
-	InstructionI64Ctz            Instruction = 0x7A
-	InstructionI64Popcnt         Instruction = 0x7B
-	InstructionI64Add            Instruction = 0x7C
-	InstructionI64Sub            Instruction = 0x7D
-	InstructionI64Mul            Instruction = 0x7E
-	InstructionI64DivS           Instruction = 0x7F
-	InstructionI64DivU           Instruction = 0x80
-	InstructionI64RemS           Instruction = 0x81
-	InstructionI64RemU           Instruction = 0x82
-	InstructionI64And            Instruction = 0x83
-	InstructionI64Or             Instruction = 0x84
-	InstructionI64Xor            Instruction = 0x85
-	InstructionI64Shl            Instruction = 0x86
-	InstructionI64ShrS           Instruction = 0x87
-	InstructionI64ShrU           Instruction = 0x88
-	InstructionI64Rotl           Instruction = 0x89
-	InstructionI64Rotr           Instruction = 0x8A
-	InstructionF32Abs            Instruction = 0x8B
-	InstructionF32Neg            Instruction = 0x8C
-	InstructionF32Ceil           Instruction = 0x8D
-	InstructionF32Floor          Instruction = 0x8E
-	InstructionF32Trunc          Instruction = 0x8F
-	InstructionF32Nearest        Instruction = 0x90
-	InstructionF32Sqrt           Instruction = 0x91
-	InstructionF32Add            Instruction = 0x92
-	InstructionF32Sub            Instruction = 0x93
-	InstructionF32Mul            Instruction = 0x94
-	InstructionF32Div            Instruction = 0x95
-	InstructionF32Min            Instruction = 0x96
-	InstructionF32Max            Instruction = 0x97
-	InstructionF32Copysign       Instruction = 0x98
-	InstructionF64Abs            Instruction = 0x99
-	InstructionF64Neg            Instruction = 0x9A
-	InstructionF64Ceil           Instruction = 0x9B
-	InstructionF64Floor          Instruction = 0x9C
-	InstructionF64Trunc          Instruction = 0x9D
-	InstructionF64Nearest        Instruction = 0x9E
-	InstructionF64Sqrt           Instruction = 0x9F
-	InstructionF64Add            Instruction = 0xA0
-	InstructionF64Sub            Instruction = 0xA1
-	InstructionF64Mul            Instruction = 0xA2
-	InstructionF64Div            Instruction = 0xA3
-	InstructionF64Min            Instruction = 0xA4
-	InstructionF64Max            Instruction = 0xA5
-	InstructionF64Copysign       Instruction = 0xA6
-	InstructionI32WrapI64        Instruction = 0xA7
-	InstructionI32TruncF32S      Instruction = 0xA8
-	InstructionI32TruncF32U      Instruction = 0xA9
-	InstructionI32TruncF64S      Instruction = 0xAA
-	InstructionI32TruncF64U      Instruction = 0xAB
-	InstructionI64ExtendI32S     Instruction = 0xAC
-	InstructionI64ExtendI32U     Instruction = 0xAD
-	InstructionI64TruncF32S      Instruction = 0xAE
-	InstructionI64TruncF32U      Instruction = 0xAF
-	InstructionI64TruncF64S      Instruction = 0xB0
-	InstructionI64TruncF64U      Instruction = 0xB1
-	InstructionF32ConvertI32S    Instruction = 0xB2
-	InstructionF32ConvertI32U    Instruction = 0xB3
-	InstructionF32ConvertI64S    Instruction = 0xB4
-	InstructionF32ConvertI64U    Instruction = 0xB5
-	InstructionF32DemoteF64      Instruction = 0xB6
-	InstructionF64ConvertI32S    Instruction = 0xB7
-	InstructionF64ConvertI32U    Instruction = 0xB8
-	InstructionF64ConvertI64S    Instruction = 0xB9
-	InstructionF64ConvertI64U    Instruction = 0xBA
-	InstructionF64PromoteF32     Instruction = 0xBB
-	InstructionI32ReinterpretF32 Instruction = 0xBC
-	InstructionI64ReinterpretF64 Instruction = 0xBD
-	InstructionF32ReinterpretI32 Instruction = 0xBE
-	InstructionF64ReinterpretI64 Instruction = 0xBF
-	InstructionI32Extend8S       Instruction = 0xC0
-	InstructionI32Extend16S      Instruction = 0xC1
-	InstructionI64Extend8S       Instruction = 0xC2
-	InstructionI64Extend16S      Instruction = 0xC3
-	InstructionI64Extend32S      Instruction = 0xC4
-)
+// End struct to represent the End instruction.
+type InstructionEnd struct{}
+
+func (e InstructionEnd) isInstruction() {}
+
+// LocalGet struct to represent the LocalGet instruction with a u32 value.
+type InstructionLocalGet struct {
+	Value uint32
+}
+
+func (lg InstructionLocalGet) isInstruction() {}
+
+// I32Add struct to represent the I32Add instruction.
+type InstructionI32Add struct{}
+
+func (ia InstructionI32Add) isInstruction() {}
