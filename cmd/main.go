@@ -2,35 +2,34 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
-)
 
-const (
-	filePath = "add.wasm"
+	"github.com/yudai2929/go-wasm-runtime/internal/wat"
+	"github.com/yudai2929/go-wasm-runtime/pkg/module"
 )
 
 func main() {
-	// Open the file
-	file, err := os.Open(filePath)
+	wasmBinary, err := wat.ParseStr(`(module
+		(func
+		  (local i32)
+		  (local i64 i64)
+		)
+	  )`)
+	fmt.Println(wasmBinary)
 	if err != nil {
-		log.Fatalf("failed to open file: %v", err)
-	}
-	defer file.Close()
-
-	// Get the file size
-	fileInfo, err := file.Stat()
-	if err != nil {
-		log.Fatalf("failed to get file info: %v", err)
-	}
-	fileSize := fileInfo.Size()
-
-	// Read the file
-	fileData := make([]byte, fileSize)
-	_, err = file.Read(fileData)
-	if err != nil {
-		log.Fatalf("failed to read file: %v", err)
+		fmt.Println(err)
+		return
 	}
 
-	fmt.Printf("fileData: %v\n", fileData)
+	mod, err := module.New(wasmBinary)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("Magic: %v\n", mod.Magic)
+	fmt.Printf("Version: %v\n", mod.Version)
+	fmt.Printf("CodeSection: %v\n", mod.CodeSection)
+	fmt.Printf("FunctionSection: %v\n", mod.FunctionSection)
+	fmt.Printf("TypeSection: %v\n", mod.TypeSection)
+
 }
