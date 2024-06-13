@@ -1,13 +1,13 @@
-package section
+package types
 
 type FuncType struct {
-	Params  ValuesTypes
-	Results ValuesTypes
+	Params  ValueTypes
+	Results ValueTypes
 }
 
 type FuncTypes []FuncType
 
-type ValuesTypes []ValueType
+type ValueTypes []ValueType
 
 type ValueType int32
 

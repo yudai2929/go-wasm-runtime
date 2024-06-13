@@ -4,13 +4,15 @@ import (
 	"fmt"
 
 	"github.com/yudai2929/go-wasm-runtime/pkg/bin"
+	"github.com/yudai2929/go-wasm-runtime/pkg/instruction"
 	"github.com/yudai2929/go-wasm-runtime/pkg/section"
+	"github.com/yudai2929/go-wasm-runtime/pkg/types"
 )
 
 type Module struct {
 	Magic           string
 	Version         uint32
-	TypeSection     *section.FuncTypes
+	TypeSection     *types.FuncTypes
 	FunctionSection *[]uint32
 	CodeSection     *section.Functions
 }
@@ -113,16 +115,16 @@ func decodeSectionHeader(binary []byte) (remaining []byte, sectionHeader *sectio
 	return binary, section.NewHeader(sectionCode, size), nil
 }
 
-func decodeValueType(binary []byte) (remaining []byte, valueType section.ValueType, err error) {
+func decodeValueType(binary []byte) (remaining []byte, valueType types.ValueType, err error) {
 	remaining, value, err := bin.LeU8(binary)
 	if err != nil {
 		return nil, 0, err
 	}
-	return remaining, section.NewValueType(value), nil
+	return remaining, types.NewValueType(value), nil
 }
 
-func decodeTypeSection(binary []byte) (remaining []byte, typeSection section.FuncTypes, err error) {
-	funcTypes := make(section.FuncTypes, 0)
+func decodeTypeSection(binary []byte) (remaining []byte, typeSection types.FuncTypes, err error) {
+	funcTypes := make(types.FuncTypes, 0)
 	remaining, count, err := bin.Leb128U32(binary)
 	if err != nil {
 		return nil, nil, err
@@ -133,29 +135,29 @@ func decodeTypeSection(binary []byte) (remaining []byte, typeSection section.Fun
 		if err != nil {
 			return nil, nil, err
 		}
-		var funcType section.FuncType
+		var funcType types.FuncType
 
 		// Params
 		rest, size, err := bin.Leb128U32(rest)
 		if err != nil {
 			return nil, nil, err
 		}
-		rest, types, err := bin.Take(rest, int(size))
+		rest, typeBytes, err := bin.Take(rest, int(size))
 		if err != nil {
 			return nil, nil, err
 		}
-		funcType.Params = section.NewValueTypes(types...)
+		funcType.Params = types.NewValueTypes(typeBytes...)
 
 		// Results
 		rest, size, err = bin.Leb128U32(rest)
 		if err != nil {
 			return nil, nil, err
 		}
-		rest, types, err = bin.Take(rest, int(size))
+		rest, typeBytes, err = bin.Take(rest, int(size))
 		if err != nil {
 			return nil, nil, err
 		}
-		funcType.Results = section.NewValueTypes(types...)
+		funcType.Results = types.NewValueTypes(typeBytes...)
 
 		funcTypes = append(funcTypes, funcType)
 		remaining = rest
@@ -183,7 +185,7 @@ func decodeFunctionSection(binary []byte) (remaining []byte, functionSection []u
 	return remaining, funcIndexes, nil
 }
 
-func decodeInstruction(binary []byte) (remaining []byte, instruction section.Instruction, err error) {
+func decodeInstruction(binary []byte) (remaining []byte, inst instruction.Instruction, err error) {
 	remaining, opcode, err := bin.LeU8(binary)
 	if err != nil {
 		return nil, nil, err
@@ -195,15 +197,15 @@ func decodeInstruction(binary []byte) (remaining []byte, instruction section.Ins
 		if err != nil {
 			return nil, nil, err
 		}
-		instruction = section.InstructionLocalGet{Value: index}
+		inst = instruction.InstructionLocalGet{Value: index}
 		remaining = rest
 	case section.OpCodeI32Add:
-		instruction = section.InstructionI32Add{}
+		inst = instruction.InstructionI32Add{}
 	case section.OpCodeEnd:
-		instruction = section.InstructionEnd{}
+		inst = instruction.InstructionEnd{}
 	}
 
-	return remaining, instruction, nil
+	return remaining, inst, nil
 }
 
 func decodeFunctionBody(binary []byte) (remaining []byte, functionBody section.Function, err error) {
@@ -221,9 +223,9 @@ func decodeFunctionBody(binary []byte) (remaining []byte, functionBody section.F
 		if err != nil {
 			return nil, section.Function{}, err
 		}
-		local := section.FunctionalLocal{
+		local := types.FunctionalLocal{
 			Count: typeCount,
-			Type:  section.NewValueType(valueType),
+			Type:  types.NewValueType(valueType),
 		}
 		functionBody.Locals = append(functionBody.Locals, local)
 

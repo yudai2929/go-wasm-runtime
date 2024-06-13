@@ -1,4 +1,4 @@
-package section
+package instruction
 
 type Instruction interface {
 	isInstruction()
